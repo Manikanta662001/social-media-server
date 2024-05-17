@@ -9,6 +9,7 @@ import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
 
+/* CONFIGURATION */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 console.log({ __filename, __dirname });
@@ -24,7 +25,7 @@ app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 app.use(cors());
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 
-// FILE STORAGE
+/* FILE STORAGE */
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -33,4 +34,13 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     cb(null, file.originalname);
   },
+});
+
+const upload = multer({ storage: storage });
+app.get("/get", (req, res) => {
+  return res.json("Hiii");
+});
+
+app.listen(5000, () => {
+  console.log("PORT is Running under 5000");
 });
