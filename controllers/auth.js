@@ -1,10 +1,14 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import Usermodel from "../models/Usermodel";
-import STATUS_TYPES from "../utils/constants";
+import Usermodel from "../models/Usermodel.js";
+import STATUS_TYPES from "../utils/constants.js";
 
 export const register = async (req, res) => {
   try {
+    const { filename } = req.file;
+    let { user } = req.body;
+    user = JSON.parse(user);
+
     const {
       firstName,
       lastName,
@@ -14,10 +18,17 @@ export const register = async (req, res) => {
       friends,
       location,
       occupation,
-    } = req.body;
+    } = user;
+    console.log(user);
+    const emailExist = await Usermodel.findOne({ email });
+    if (emailExist) {
+      return res
+        .status(STATUS_TYPES.DUPLICATE_KEY)
+        .json({ error: "Email alredy exists" });
+    }
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new Usermodel({
-      ...req.body,
+      ...user,
       password: hashedPassword,
       viewedProfile: Math.floor(Math.random() * 10000),
       impressions: Math.floor(Math.random() * 10000),
