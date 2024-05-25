@@ -6,6 +6,7 @@ dotenv.config();
 export const verifyToken = (req, res, next) => {
   try {
     let token = req.headers.Authorization;
+    console.log(token)
     if (!token)
       return res
         .status(STATUS_TYPES.FORBIDDEN)
@@ -13,7 +14,12 @@ export const verifyToken = (req, res, next) => {
     if (token.startsWith("Bearer ")) {
       token = token.replace("Bearer ", "");
     }
-    const tokenMatchecd = jwt.verify(token, process.env.JWT_SECRET);
+    const tokenMatched = jwt.verify(token, process.env.JWT_SECRET);
+    if (!tokenMatched) {
+      return res
+        .status(STATUS_TYPES.FORBIDDEN)
+        .json({ error: "Invalid Token" });
+    }
     req.user = token;
     next();
   } catch (error) {

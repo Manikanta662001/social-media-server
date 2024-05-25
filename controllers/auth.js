@@ -33,7 +33,7 @@ export const register = async (req, res) => {
     const newUser = new Usermodel({
       ...user,
       password: hashedPassword,
-      picturePath:filename,
+      picturePath: filename,
       viewedProfile: Math.floor(Math.random() * 10000),
       impressions: Math.floor(Math.random() * 10000),
     });

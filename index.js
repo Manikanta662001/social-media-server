@@ -9,23 +9,27 @@ import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
 import { register } from "./controllers/auth.js";
+import { createPost } from "./controllers/posts.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import postRoutes from "./routes/postRoutes.js";
+import { verifyToken } from "./middleware/verifyToken.js";
 
 /* CONFIGURATION */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 // console.log({ __filename, __dirname });
 
-dotenv.config();
+dotenv.config(); //loads variables in .env file to process.env
+const PORT = process.env.PORT || 8000;
 const app = express();
-app.use(express.json());
-app.use(helmet());
+app.use(express.json()); //Built in Mddleware to Parse JSON payloads
+app.use(helmet()); // used to set various http headers from frontend
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
-app.use(morgan("common"));
+app.use(morgan("common")); // middleware used for logging the requests
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
-app.use(cors());
+app.use(cors()); // Middleware allows to accept requests from different origins
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 
 /* FILE STORAGE */
@@ -35,7 +39,7 @@ const storage = multer.diskStorage({
     cb(null, "public/assets");
   },
   filename: (req, file, cb) => {
-    cb(null, file.originalname);
+    cb(null, Date.now() + "@" + file.originalname);
   },
 });
 
@@ -43,10 +47,12 @@ const upload = multer({ storage: storage });
 
 /* ROUTES WITH FILES */
 app.post("/auth/register", upload.single("picture"), register);
+app.post("/posts", verifyToken, upload.single("picture"), createPost);
 
 /* ROUTES */
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
+app.use("/posts", postRoutes);
 
 /* Database Connection */
 mongoose
@@ -58,6 +64,6 @@ app.get("/get", (req, res) => {
   return res.json("Hiii");
 });
 
-app.listen(5000, () => {
-  console.log("PORT is Running under 5000");
+app.listen(PORT, () => {
+  console.log(`PORT is Running under : ${PORT}`);
 });

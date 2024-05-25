@@ -50,7 +50,7 @@ export const addRemoveFriends = async (req, res) => {
     const friend = await Usermodel.findById(friendId);
     if (user.friends.includes(friendId)) {
       user.friends = user.friends.filter((id) => id !== friendId);
-      friend.friends = friend.friends.filter((id) => id !== id);
+      friend.friends = friend.friends.filter((_id) => _id !== id);
     } else {
       user.friends.push(friendId);
       friend.friends.push(id);
