@@ -14,6 +14,9 @@ import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import postRoutes from "./routes/postRoutes.js";
 import { verifyToken } from "./middleware/verifyToken.js";
+import Usermodel from "./models/Usermodel.js";
+import { posts, users } from "./data/index.js";
+import Postmodel from "./models/Postmodel.js";
 
 /* CONFIGURATION */
 const __filename = fileURLToPath(import.meta.url);
@@ -57,7 +60,12 @@ app.use("/posts", postRoutes);
 /* Database Connection */
 mongoose
   .connect(process.env.MONGODB_URL)
-  .then(() => console.log("MONGODB is Connected"))
+  .then(() => {
+    console.log("MONGODB is Connected");
+    /* ADD DATA ONE TIME */
+    // Usermodel.insertMany(users);
+    // Postmodel.insertMany(posts);
+  })
   .catch((err) => console.log("MONGODB Error", err.message));
 
 app.get("/get", (req, res) => {
