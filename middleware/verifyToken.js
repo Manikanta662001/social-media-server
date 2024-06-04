@@ -5,7 +5,7 @@ import STATUS_TYPES from "../utils/constants.js";
 dotenv.config();
 export const verifyToken = (req, res, next) => {
   try {
-    let token = req.headers.Authorization;
+    let token = req.headers['authorization'];
     console.log(token)
     if (!token)
       return res
