@@ -2,13 +2,13 @@ import express from "express";
 import { verifyToken } from "../middleware/verifyToken.js";
 import {
   addRemoveFriends,
-  getUser,
   getUserFriends,
+  getSingleUser
 } from "../controllers/users.js";
 const router = express.Router();
 
 /* READ */
-router.get("/:id", verifyToken, getUser);
+router.get("/:id", verifyToken, getSingleUser);
 router.get("/:id/friends", verifyToken, getUserFriends);
 
 /* UPDATE */

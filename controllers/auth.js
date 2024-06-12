@@ -38,7 +38,7 @@ export const register = async (req, res) => {
       impressions: Math.floor(Math.random() * 10000),
     });
     const savedUser = await newUser.save();
-    return res.status(STATUS_TYPES.CREATED).json(savedUser);
+    return res.status(STATUS_TYPES.CREATED).json({ user: savedUser, message: "User Registered Successfully" });
   } catch (error) {
     res.status(STATUS_TYPES.SERVER_ERROR).json({ error: error.message });
   }
@@ -63,7 +63,7 @@ export const login = async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
     //we don't need to send the pwd to frontend
     delete user.password;
-    return res.status(STATUS_TYPES.OK).json({ user, token });
+    return res.status(STATUS_TYPES.OK).json({ user, token,message:"Login Successful" });
   } catch (error) {
     return res.status(STATUS_TYPES.SERVER_ERROR).json({ error: error.message });
   }

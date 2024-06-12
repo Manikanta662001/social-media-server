@@ -7,6 +7,7 @@ export const createPost = async (req, res) => {
     const { userId, description, picturePath } = req.body;
     // findById() Retrieve the single document or record with the specified userId(_id) of mongodb
     const user = await Usermodel.findById(userId);
+     console.log("USER::",JSON.parse(req.body.userId))
     const newPost = await Postmodel({
       userId,
       firstName: user.firstName,
@@ -23,6 +24,7 @@ export const createPost = async (req, res) => {
     const post = await Postmodel.find();
     return res.status(STATUS_TYPES.CREATED).json(post);
   } catch (error) {
+    console.log("ERR1:::",error.message)
     return res.status(STATUS_TYPES.BAD_REQUEST).json({ error: error.message });
   }
 };

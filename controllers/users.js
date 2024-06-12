@@ -3,6 +3,15 @@ import STATUS_TYPES from "../utils/constants.js";
 
 export const getUser = async (req, res) => {
   try {
+    const { id } = req.user;
+    const user = await Usermodel.findById(id);
+    return res.status(STATUS_TYPES.OK).json(user);
+  } catch (error) {
+    return res.status(STATUS_TYPES.NOT_FOUND).json({ error: error.message });
+  }
+};
+export const getSingleUser = async (req, res) => {
+  try {
     const { id } = req.params;
     const user = await Usermodel.findById(id);
     return res.status(STATUS_TYPES.OK).json(user);

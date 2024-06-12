@@ -17,6 +17,7 @@ import { verifyToken } from "./middleware/verifyToken.js";
 import Usermodel from "./models/Usermodel.js";
 import { posts, users } from "./data/index.js";
 import Postmodel from "./models/Postmodel.js";
+import { getUser } from "./controllers/users.js";
 
 /* CONFIGURATION */
 const __filename = fileURLToPath(import.meta.url);
@@ -50,7 +51,9 @@ const upload = multer({ storage: storage });
 
 /* ROUTES WITH FILES */
 app.post("/auth/register", upload.single("picture"), register);
-app.post("/posts", verifyToken, upload.single("picture"), createPost);
+app.post("/createPost", verifyToken, upload.single("picture"), createPost);
+
+app.get("/getUser", verifyToken, getUser);
 
 /* ROUTES */
 app.use("/auth", authRoutes);
