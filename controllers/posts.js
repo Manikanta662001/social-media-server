@@ -6,11 +6,10 @@ export const createPost = async (req, res) => {
   try {
     const { userId, description } = req.body;
     let name;
-    if (req?.file){
-      const {filename} = req?.file;
+    if (req?.file) {
+      const { filename } = req?.file;
       name = filename;
     }
-    console.log('POST::::',userId,name)
     //findById() Retrieve the single document or record with the specified userId(_id) of mongodb
     const user = await Usermodel.findById(userId);
     const incomingPost = {
@@ -21,16 +20,17 @@ export const createPost = async (req, res) => {
       description,
       userPicturePath: user.picturePath,
       likes: [],
-      comments: {},
-    }
+      comments: ["single comment"],
+    };
     if (name) incomingPost.picturePath = name;
     const newPost = await Postmodel(incomingPost);
     await newPost.save();
     //find() Retrieve all documents or records from the 'posts' collection
     const allDbPosts = await Postmodel.find();
-    return res.status(STATUS_TYPES.CREATED).json({allDbPosts,message:'Post Created Successfully'});
+    return res
+      .status(STATUS_TYPES.CREATED)
+      .json({ allDbPosts, message: "Post Created Successfully" });
   } catch (error) {
-    console.log("ERR1:::",error.message)
     return res.status(STATUS_TYPES.BAD_REQUEST).json({ error: error.message });
   }
 };

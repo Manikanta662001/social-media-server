@@ -6,7 +6,6 @@ dotenv.config();
 export const verifyToken = (req, res, next) => {
   try {
     let token = req.headers['authorization'];
-    console.log("TOKEN:::",token)
     if (!token)
       return res
         .status(STATUS_TYPES.FORBIDDEN)
@@ -23,7 +22,6 @@ export const verifyToken = (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    console.log("ERR:::",error.message)
     res.status(STATUS_TYPES.SERVER_ERROR).json({ error: error.message });
   }
 };

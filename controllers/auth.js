@@ -22,7 +22,6 @@ export const register = async (req, res) => {
       location,
       occupation,
     } = user;
-    console.log(user, req.file);
     const emailExist = await Usermodel.findOne({ email });
     if (emailExist) {
       return res
@@ -49,7 +48,6 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(email,password,req.body)
     const user = await Usermodel.findOne({ email });
     if (!user)
       return res
