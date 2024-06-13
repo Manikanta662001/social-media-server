@@ -4,25 +4,31 @@ import STATUS_TYPES from "../utils/constants.js";
 
 export const createPost = async (req, res) => {
   try {
-    const { userId, description, picturePath } = req.body;
-    // findById() Retrieve the single document or record with the specified userId(_id) of mongodb
+    const { userId, description } = req.body;
+    let name;
+    if (req?.file){
+      const {filename} = req?.file;
+      name = filename;
+    }
+    console.log('POST::::',userId,name)
+    //findById() Retrieve the single document or record with the specified userId(_id) of mongodb
     const user = await Usermodel.findById(userId);
-     console.log("USER::",JSON.parse(req.body.userId))
-    const newPost = await Postmodel({
+    const incomingPost = {
       userId,
       firstName: user.firstName,
       lastName: user.lastName,
       location: user.location,
       description,
       userPicturePath: user.picturePath,
-      picturePath,
       likes: [],
       comments: {},
-    });
+    }
+    if (name) incomingPost.picturePath = name;
+    const newPost = await Postmodel(incomingPost);
     await newPost.save();
     //find() Retrieve all documents or records from the 'posts' collection
-    const post = await Postmodel.find();
-    return res.status(STATUS_TYPES.CREATED).json(post);
+    const allDbPosts = await Postmodel.find();
+    return res.status(STATUS_TYPES.CREATED).json({allDbPosts,message:'Post Created Successfully'});
   } catch (error) {
     console.log("ERR1:::",error.message)
     return res.status(STATUS_TYPES.BAD_REQUEST).json({ error: error.message });
