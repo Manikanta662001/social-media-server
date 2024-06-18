@@ -75,3 +75,22 @@ export const likePost = async (req, res) => {
     return res.status(STATUS_TYPES.NOT_FOUND).json({ error: error.message });
   }
 };
+
+export const addCommentToPost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { userId, comment } = req.body;
+    const post = await Postmodel.findById(postId);
+    console.log("COMMENT:::", postId, userId, comment, post)
+    post.comments.push(comment);
+    const updatedPost = await Postmodel.findByIdAndUpdate(
+      postId,
+      { comments: post.comments },
+      { new: true }
+    );
+    const allPosts = await Postmodel.find();
+    return res.status(STATUS_TYPES.OK).json({ allPosts, message: 'Comment Added Sucessfully' });
+  } catch (error) {
+    return res.status(STATUS_TYPES.BAD_REQUEST).json({ error: error.message });
+  }
+}
