@@ -82,7 +82,8 @@ export const addCommentToPost = async (req, res) => {
     const { userId, comment } = req.body;
     const post = await Postmodel.findById(postId);
     console.log("COMMENT:::", postId, userId, comment, post)
-    post.comments.push(comment);
+    const { firstName } = await Usermodel.findById(userId)
+    post.comments.push({ comment, name: firstName });
     const updatedPost = await Postmodel.findByIdAndUpdate(
       postId,
       { comments: post.comments },

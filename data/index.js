@@ -153,9 +153,9 @@ export const posts = [
       [userIds[4], true],
     ]),
     comments: [
-      "random comment",
-      "another random comment",
-      "yet another random comment",
+      { comment: "random comment", name: 'Whatcha' },
+      { comment: "another random comment", name: 'Whatcha' },
+      { comment: "yet another random comment", name: 'Whatcha' },
     ],
   },
   {
@@ -175,10 +175,10 @@ export const posts = [
       [userIds[2], true],
     ]),
     comments: [
-      "one more random comment",
-      "and another random comment",
-      "no more random comments",
-      "I lied, one more random comment",
+      { comment: "one more random comment", name: 'Steve' },
+      { comment: "and another random comment", name: 'Steve' },
+      { comment: "no more random comments", name: 'Jane' },
+      { comment: "I lied, one more random comment", name: 'Jane' },
     ],
   },
   {
@@ -198,11 +198,11 @@ export const posts = [
       [userIds[5], true],
     ]),
     comments: [
-      "one more random comment",
-      "I lied, one more random comment",
-      "I lied again, one more random comment",
-      "Why am I doing this?",
-      "I'm bored",
+      { comment: "one more random comment", name: 'Harvey' },
+      { comment: "I lied, one more random comment", name: 'Steve' },
+      { comment: "I lied again, one more random comment", name: 'Steve' },
+      { comment: "Why am I doing this?", name: 'Harvey' },
+      { comment: "I'm bored", name: 'Steve' },
     ],
   },
   {
@@ -221,12 +221,12 @@ export const posts = [
       [userIds[3], true],
     ]),
     comments: [
-      "I lied again, one more random comment",
-      "Why am I doing this?",
-      "I'm bored",
-      "I'm still bored",
-      "All I want to do is play video games",
-      "I'm going to play video games",
+      { comment: "I lied again, one more random comment", name: 'Steve' },
+      { comment: "Why am I doing this?", name: 'Jane' },
+      { comment: "I'm bored", name: 'Steve' },
+      { comment: "I'm still bored", name: 'Steve' },
+      { comment: "All I want to do is play video games", name: 'Jane' },
+      { comment: "I'm going to play video games", name: 'Steve' },
     ],
   },
   {
@@ -246,11 +246,11 @@ export const posts = [
       [userIds[7], true],
     ]),
     comments: [
-      "I lied again, one more random comment",
-      "Why am I doing this?",
-      "Man I'm bored",
-      "What should I do?",
-      "I'm going to play video games",
+      { comment: "I lied again, one more random comment", name: 'Steve' },
+      { comment: "Why am I doing this?", name: 'Harvey' },
+      { comment: "Man I'm bored", name: 'Harvey' },
+      { comment: "What should I do?", name: 'Steve' },
+      { comment: "I'm going to play video games", name: 'Steve' },
     ],
   },
   {
@@ -269,11 +269,11 @@ export const posts = [
     ]),
 
     comments: [
-      "Can I play video games now?",
-      "No let's actually study",
-      "Never mind, I'm going to play video games",
-      "Stop it.",
-      "Michael, stop it.",
+      { comment: "Can I play video games now?", name: 'Carly' },
+      { comment: "No let's actually study", name: 'Steve' },
+      { comment: "Never mind, I'm going to play video games", name: 'Carly' },
+      { comment: "Stop it.", name: 'Steve' },
+      { comment: "Michael, stop it.", name: 'Carly' },
     ],
   },
 ];
