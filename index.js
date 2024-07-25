@@ -75,6 +75,21 @@ app.get("/get", (req, res) => {
   return res.json("Hiii");
 });
 
-app.listen(PORT, () => {
+/* SERVER FOR CHATS */
+import { Server } from "socket.io";
+import http from 'http'
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+})
+
+io.on('connection', (socket) => {
+  console.log('A user is Connected')
+})
+
+server.listen(PORT, () => {
   console.log(`PORT is Running under : ${PORT}`);
 });
