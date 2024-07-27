@@ -111,15 +111,16 @@ io.on("connection", (socket) => {
       });
       const savedMessage = await newMessage.save();
     }
-    socket.broadcast.emit("message", {
-      to: { name: getFullName(to), id: to._id },
-      content,
-    });
+    socket.broadcast.emit("message", singleMessage);
   });
   socket.on("allmsgs", async ({ roomId }) => {
     const allMsgs = await MessageModel.findOne({ roomId });
-    io.emit("getallmsgs", { messages: allMsgs.messages });
+    io.emit("getallmsgs", { messages: allMsgs?.messages ?? [] });
   });
+
+  socket.on("disconnect",()=>{
+    console.log('Client Disconnected')
+  })
 });
 
 server.listen(PORT, () => {
