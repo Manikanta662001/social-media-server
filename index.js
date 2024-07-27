@@ -18,6 +18,7 @@ import Usermodel from "./models/Usermodel.js";
 import { posts, users } from "./data/index.js";
 import Postmodel from "./models/Postmodel.js";
 import { getUser } from "./controllers/users.js";
+import MessageModel from "./models/Messagemodel.js";
 
 /* CONFIGURATION */
 const __filename = fileURLToPath(import.meta.url);
@@ -77,18 +78,49 @@ app.get("/get", (req, res) => {
 
 /* SERVER FOR CHATS */
 import { Server } from "socket.io";
-import http from 'http'
+import http from "http";
+import { formatTime, getFullName } from "./utils/utils.js";
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
-  }
-})
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
 
-io.on('connection', (socket) => {
-  console.log('A user is Connected')
-})
+io.on("connection", (socket) => {
+  console.log("A user is Connected", socket.id);
+  socket.on("message", async ({ roomId, content, from, to, date }) => {
+    console.log("MESSAGE::::", { roomId, content, from, to, date });
+    const singleMessage = {
+      content,
+      from: { name: getFullName(from), id: from._id },
+      to: { name: getFullName(to), id: to._id },
+      time: formatTime(date),
+      date,
+    };
+    const roomPresent = await MessageModel.findOne({ roomId });
+    if (roomPresent) {
+      roomPresent.messages.push(singleMessage);
+      const updated = await roomPresent.save();
+      console.log("UPDATED:::", updated, roomPresent);
+    } else {
+      const newMessage = await MessageModel({
+        messages: singleMessage,
+        roomId,
+      });
+      const savedMessage = await newMessage.save();
+    }
+    socket.broadcast.emit("message", {
+      to: { name: getFullName(to), id: to._id },
+      content,
+    });
+  });
+  socket.on("allmsgs", async ({ roomId }) => {
+    const allMsgs = await MessageModel.findOne({ roomId });
+    io.emit("getallmsgs", { messages: allMsgs.messages });
+  });
+});
 
 server.listen(PORT, () => {
   console.log(`PORT is Running under : ${PORT}`);
