@@ -32,6 +32,10 @@ const messageSubSchema = new mongoose.Schema({
   date: {
     type: String,
     required: true,
+  }, 
+  type:{
+    type:String,
+    required:true
   },
   fileLink: String,
 });

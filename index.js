@@ -13,6 +13,7 @@ import { createPost } from "./controllers/posts.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import postRoutes from "./routes/postRoutes.js";
+import fileRoutes from "./routes/fileRoutes.js";
 import { verifyToken } from "./middleware/verifyToken.js";
 import Usermodel from "./models/Usermodel.js";
 import { posts, users } from "./data/index.js";
@@ -60,6 +61,7 @@ app.get("/getUser", verifyToken, getUser);
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/posts", postRoutes);
+app.use("/file", fileRoutes);
 
 /* Database Connection */
 mongoose
@@ -78,8 +80,7 @@ app.get("/get", (req, res) => {
 
 /* SERVER FOR CHATS */
 import { Server } from "socket.io";
-import http from "http";
-import { formatTime, getFullName } from "./utils/utils.js";
+import http from "http";  
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -90,32 +91,39 @@ const io = new Server(server, {
 
 io.on("connection", (socket) => {
   console.log("A user is Connected", socket.id);
-  socket.on("message", async ({ roomId, content, from, to, date }) => {
-    console.log("MESSAGE::::", { roomId, content, from, to, date });
+  socket.on('joinRoom',({roomId})=>{
+    socket.join(roomId);
+  })
+  socket.on('leaveRoom',({roomId})=>{
+    socket.leave(roomId);
+  });
+  socket.on("message", async ({ roomId, content, from, to, date, time, type,fileLink }) => {
+    console.log("MESSAGE::::", { roomId, content, from, to, date,time,type ,fileLink});
     const singleMessage = {
       content,
-      from: { name: getFullName(from), id: from._id },
-      to: { name: getFullName(to), id: to._id },
-      time: formatTime(date),
+      from,
+      to,
+      time,
       date,
+      type
     };
+    if (type === "image") singleMessage.fileLink = fileLink;
     const roomPresent = await MessageModel.findOne({ roomId });
     if (roomPresent) {
       roomPresent.messages.push(singleMessage);
       const updated = await roomPresent.save();
-      console.log("UPDATED:::", updated, roomPresent);
     } else {
       const newMessage = await MessageModel({
         messages: singleMessage,
         roomId,
       });
-      const savedMessage = await newMessage.save();
+      await newMessage.save();
     }
-    socket.broadcast.emit("message", singleMessage);
+    io.to(roomId).emit("message", singleMessage);
   });
   socket.on("allmsgs", async ({ roomId }) => {
     const allMsgs = await MessageModel.findOne({ roomId });
-    io.emit("getallmsgs", { messages: allMsgs?.messages ?? [] });
+    io.to(roomId).emit("getallmsgs", { messages: allMsgs?.messages ?? [] });
   });
 
   socket.on("disconnect",()=>{
