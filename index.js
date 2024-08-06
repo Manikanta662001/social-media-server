@@ -13,11 +13,13 @@ import { createPost } from "./controllers/posts.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import postRoutes from "./routes/postRoutes.js";
+import fileRoutes from "./routes/fileRoutes.js";
 import { verifyToken } from "./middleware/verifyToken.js";
 import Usermodel from "./models/Usermodel.js";
 import { posts, users } from "./data/index.js";
 import Postmodel from "./models/Postmodel.js";
 import { getUser } from "./controllers/users.js";
+import MessageModel from "./models/Messagemodel.js";
 
 /* CONFIGURATION */
 const __filename = fileURLToPath(import.meta.url);
@@ -59,6 +61,7 @@ app.get("/getUser", verifyToken, getUser);
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/posts", postRoutes);
+app.use("/file", fileRoutes);
 
 /* Database Connection */
 mongoose
@@ -75,6 +78,59 @@ app.get("/get", (req, res) => {
   return res.json("Hiii");
 });
 
-app.listen(PORT, () => {
+/* SERVER FOR CHATS */
+import { Server } from "socket.io";
+import http from "http";  
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("A user is Connected", socket.id);
+  socket.on('joinRoom',({roomId})=>{
+    socket.join(roomId);
+  })
+  socket.on('leaveRoom',({roomId})=>{
+    socket.leave(roomId);
+  });
+  socket.on("message", async ({ roomId, content, from, to, date, time, type,fileLink }) => {
+    console.log("MESSAGE::::", { roomId, content, from, to, date,time,type ,fileLink});
+    const singleMessage = {
+      content,
+      from,
+      to,
+      time,
+      date,
+      type
+    };
+    if (type === "image") singleMessage.fileLink = fileLink;
+    const roomPresent = await MessageModel.findOne({ roomId });
+    if (roomPresent) {
+      roomPresent.messages.push(singleMessage);
+      const updated = await roomPresent.save();
+    } else {
+      const newMessage = await MessageModel({
+        messages: singleMessage,
+        roomId,
+      });
+      await newMessage.save();
+    }
+    io.to(roomId).emit("message", singleMessage);
+  });
+  socket.on("allmsgs", async ({ roomId }) => {
+    const allMsgs = await MessageModel.findOne({ roomId });
+    io.to(roomId).emit("getallmsgs", { messages: allMsgs?.messages ?? [] });
+  });
+
+  socket.on("disconnect",()=>{
+    console.log('Client Disconnected')
+  })
+});
+
+server.listen(PORT, () => {
   console.log(`PORT is Running under : ${PORT}`);
 });
