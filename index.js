@@ -119,7 +119,18 @@ io.on("connection", (socket) => {
       });
       await newMessage.save();
     }
+    //to send message to a particular roomId
     io.to(roomId).emit("message", singleMessage);
+    //change the Friends array of UserModel
+    const currentUser =await Usermodel.findById(from.id);
+    const clonedObj = [...currentUser.friends];
+    const selectedUserIndex = clonedObj.findIndex((id)=>id===to.id);
+    if (selectedUserIndex!==0){
+      const friend = clonedObj.splice(selectedUserIndex,1);
+      clonedObj.unshift(friend[0]);
+      currentUser.friends = clonedObj;
+      await currentUser.save();
+    }
   });
   socket.on("allmsgs", async ({ roomId }) => {
     const allMsgs = await MessageModel.findOne({ roomId });
