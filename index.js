@@ -26,6 +26,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 // console.log({ __filename, __dirname });
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://192.168.10.31",
+  "https://manikanta662001.github.io",
+];
+
 dotenv.config(); //loads variables in .env file to process.env
 const PORT = process.env.PORT || 8000;
 const app = express();
@@ -35,7 +41,20 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common")); // middleware used for logging the requests
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
-app.use(cors()); // Middleware allows to accept requests from different origins
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      console.log("ORIGIN:::", origin);
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin) === -1) {
+        const msg =
+          "The CORS policy for this site does not allow access from the specified origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+  })
+); // Middleware allows to accept requests from different origins
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 
 /* FILE STORAGE */
@@ -80,7 +99,7 @@ app.get("/get", (req, res) => {
 
 /* SERVER FOR CHATS */
 import { Server } from "socket.io";
-import http from "http";  
+import http from "http";
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -91,55 +110,67 @@ const io = new Server(server, {
 
 io.on("connection", (socket) => {
   console.log("A user is Connected", socket.id);
-  socket.on('joinRoom',({roomId})=>{
+  socket.on("joinRoom", ({ roomId }) => {
     socket.join(roomId);
-  })
-  socket.on('leaveRoom',({roomId})=>{
+  });
+  socket.on("leaveRoom", ({ roomId }) => {
     socket.leave(roomId);
   });
-  socket.on("message", async ({ roomId, content, from, to, date, time, type,fileLink }) => {
-    console.log("MESSAGE::::", { roomId, content, from, to, date,time,type ,fileLink});
-    const singleMessage = {
-      content,
-      from,
-      to,
-      time,
-      date,
-      type
-    };
-    if (type === "image") singleMessage.fileLink = fileLink;
-    const roomPresent = await MessageModel.findOne({ roomId });
-    if (roomPresent) {
-      roomPresent.messages.push(singleMessage);
-      const updated = await roomPresent.save();
-    } else {
-      const newMessage = await MessageModel({
-        messages: singleMessage,
+  socket.on(
+    "message",
+    async ({ roomId, content, from, to, date, time, type, fileLink }) => {
+      console.log("MESSAGE::::", {
         roomId,
+        content,
+        from,
+        to,
+        date,
+        time,
+        type,
+        fileLink,
       });
-      await newMessage.save();
+      const singleMessage = {
+        content,
+        from,
+        to,
+        time,
+        date,
+        type,
+      };
+      if (type === "image") singleMessage.fileLink = fileLink;
+      const roomPresent = await MessageModel.findOne({ roomId });
+      if (roomPresent) {
+        roomPresent.messages.push(singleMessage);
+        const updated = await roomPresent.save();
+      } else {
+        const newMessage = await MessageModel({
+          messages: singleMessage,
+          roomId,
+        });
+        await newMessage.save();
+      }
+      //to send message to a particular roomId
+      io.to(roomId).emit("message", singleMessage);
+      //change the Friends array of UserModel
+      const currentUser = await Usermodel.findById(from.id);
+      const clonedObj = [...currentUser.friends];
+      const selectedUserIndex = clonedObj.findIndex((id) => id === to.id);
+      if (selectedUserIndex !== 0) {
+        const friend = clonedObj.splice(selectedUserIndex, 1);
+        clonedObj.unshift(friend[0]);
+        currentUser.friends = clonedObj;
+        await currentUser.save();
+      }
     }
-    //to send message to a particular roomId
-    io.to(roomId).emit("message", singleMessage);
-    //change the Friends array of UserModel
-    const currentUser =await Usermodel.findById(from.id);
-    const clonedObj = [...currentUser.friends];
-    const selectedUserIndex = clonedObj.findIndex((id)=>id===to.id);
-    if (selectedUserIndex!==0){
-      const friend = clonedObj.splice(selectedUserIndex,1);
-      clonedObj.unshift(friend[0]);
-      currentUser.friends = clonedObj;
-      await currentUser.save();
-    }
-  });
+  );
   socket.on("allmsgs", async ({ roomId }) => {
     const allMsgs = await MessageModel.findOne({ roomId });
     io.to(roomId).emit("getallmsgs", { messages: allMsgs?.messages ?? [] });
   });
 
-  socket.on("disconnect",()=>{
-    console.log('Client Disconnected')
-  })
+  socket.on("disconnect", () => {
+    console.log("Client Disconnected");
+  });
 });
 
 server.listen(PORT, () => {
