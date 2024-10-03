@@ -28,7 +28,7 @@ const __dirname = path.dirname(__filename);
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "http://192.168.10.31",
+  "http://192.168.10.31:3000",
   "https://manikanta662001.github.io",
 ];
 
@@ -46,7 +46,7 @@ app.use(
     origin: function (origin, callback) {
       console.log("ORIGIN:::", origin);
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin) === -1) {
+      if (allowedOrigins.includes(origin) === false) {
         const msg =
           "The CORS policy for this site does not allow access from the specified origin.";
         return callback(new Error(msg), false);
