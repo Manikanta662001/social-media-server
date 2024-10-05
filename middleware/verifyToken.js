@@ -5,8 +5,8 @@ import STATUS_TYPES from "../utils/constants.js";
 dotenv.config();
 export const verifyToken = (req, res, next) => {
   try {
-    let token = req.headers['authorization'];
-    if (!token)
+    let token = req.headers["authorization"];
+    if (!token || token === "Bearer")
       return res
         .status(STATUS_TYPES.FORBIDDEN)
         .json({ error: "Token Not Found" });
