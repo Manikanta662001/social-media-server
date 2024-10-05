@@ -60,12 +60,10 @@ export const register = async (req, res) => {
       if (error) {
         return res.status(STATUS_TYPES.SERVER_ERROR).send(error.toString());
       }
-      return res
-        .status(STATUS_TYPES.CREATED)
-        .json({
-          user: savedUser,
-          message: "User Registered Successfully and Email Sent",
-        });
+      return res.status(STATUS_TYPES.CREATED).json({
+        user: savedUser,
+        message: "User Registered Successfully and Email Sent",
+      });
     });
   } catch (error) {
     res.status(STATUS_TYPES.SERVER_ERROR).json({ error: error.message });
@@ -88,8 +86,6 @@ export const login = async (req, res) => {
         .status(STATUS_TYPES.BAD_REQUEST)
         .json({ error: "Invalid Credentials" });
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-    //we don't need to send the pwd to frontend
-    delete user.password;
     const mailOptions = {
       from: "gundlurimanikanta142@gmail.com",
       to: email,
@@ -104,9 +100,12 @@ export const login = async (req, res) => {
       if (error) {
         return res.status(STATUS_TYPES.SERVER_ERROR).send(error.toString());
       }
+      const userObject = user.toObject();
+      //we don't need to send the pwd to frontend
+      delete userObject.password;
       return res
         .status(STATUS_TYPES.OK)
-        .json({ user, token, message: "Login Successful" });
+        .json({ user: userObject, token, message: "Login Successful" });
     });
   } catch (error) {
     return res.status(STATUS_TYPES.SERVER_ERROR).json({ error: error.message });
