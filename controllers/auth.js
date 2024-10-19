@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import Usermodel from "../models/Usermodel.js";
-import STATUS_TYPES from "../utils/constants.js";
+import STATUS_TYPES, { generatedOtps } from "../utils/constants.js";
 import nodemailer from "nodemailer";
 
 /* Send Mail  */
@@ -44,6 +44,8 @@ export const register = async (req, res) => {
       picturePath: filename,
       viewedProfile: Math.floor(Math.random() * 10000),
       impressions: Math.floor(Math.random() * 10000),
+      messageCount: 0,
+      lastSeen: new Date(),
     });
     const savedUser = await newUser.save();
     const mailOptions = {
@@ -107,6 +109,81 @@ export const login = async (req, res) => {
         .status(STATUS_TYPES.OK)
         .json({ user: userObject, token, message: "Login Successful" });
     });
+  } catch (error) {
+    return res.status(STATUS_TYPES.SERVER_ERROR).json({ error: error.message });
+  }
+};
+
+export const forgotPwd1 = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await Usermodel.findOne({ email });
+    console.log("FORGOT:::", user, email);
+    if (!user)
+      return res
+        .status(STATUS_TYPES.BAD_REQUEST)
+        .json({ error: "User Not Found" });
+
+    const randomOtp = Math.floor(Math.random() * 1000000).toString();
+    generatedOtps[user._id] = randomOtp;
+    const mailOptions = {
+      from: "gundlurimanikanta142@gmail.com",
+      to: email,
+      subject: "Social-Media Forgot Password",
+      html: `
+      Hii <em>${user.firstName}</em>,
+      <p>Your OTP is ${randomOtp}</p>
+      <br/>
+      <h6>Thank You</h6>`,
+    };
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return res.status(STATUS_TYPES.SERVER_ERROR).send(error.toString());
+      }
+      return res
+        .status(STATUS_TYPES.OK)
+        .json({ message: "Otp Sent To Your Mail" });
+    });
+  } catch (error) {
+    return res.status(STATUS_TYPES.SERVER_ERROR).json({ error: error.message });
+  }
+};
+export const forgotPwd2 = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const user = await Usermodel.findOne({ email });
+    if (!user)
+      return res
+        .status(STATUS_TYPES.BAD_REQUEST)
+        .json({ error: "User Not Found" });
+    if (generatedOtps[user._id] === otp) {
+      return res.status(STATUS_TYPES.OK).json({ message: "OTP verified" });
+    } else {
+      return res
+        .status(STATUS_TYPES.BAD_REQUEST)
+        .json({ error: "Incorrect OTP" });
+    }
+  } catch (error) {
+    return res.status(STATUS_TYPES.SERVER_ERROR).json({ error: error.message });
+  }
+};
+export const forgotPwd3 = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await Usermodel.findOne({ email });
+    if (!user)
+      return res
+        .status(STATUS_TYPES.BAD_REQUEST)
+        .json({ error: "User Not Found" });
+    const hashedPwd = await bcrypt.hash(password, 10);
+    const updatedUser = await Usermodel.findOneAndUpdate(
+      { email: email },
+      { password: hashedPwd },
+      { new: true, upsert: true }
+    );
+    return res
+      .status(STATUS_TYPES.OK)
+      .json({ message: "Password Updated Successfully" });
   } catch (error) {
     return res.status(STATUS_TYPES.SERVER_ERROR).json({ error: error.message });
   }

@@ -167,6 +167,14 @@ io.on("connection", (socket) => {
     const allMsgs = await MessageModel.findOne({ roomId });
     io.to(roomId).emit("getallmsgs", { messages: allMsgs?.messages ?? [] });
   });
+  socket.on("msgtyping", async ({ roomId, to }) => {
+    console.log('TYPING:::',to)
+    io.to(roomId).emit("msgtyping", { roomId, to });
+  });
+  socket.on("msgnottyping", async ({ roomId, to }) => {
+    console.log('NOT TYPING:::',to)
+    io.to(roomId).emit("msgnottyping", { roomId, to });
+  });
 
   socket.on("disconnect", () => {
     console.log("Client Disconnected");

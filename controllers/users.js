@@ -35,6 +35,8 @@ export const getUserFriends = async (req, res) => {
         occupation,
         location,
         picturePath,
+        messageCount,
+        lastSeen,
       }) => {
         return {
           _id,
@@ -44,6 +46,8 @@ export const getUserFriends = async (req, res) => {
           occupation,
           location,
           picturePath,
+          messageCount,
+          lastSeen,
         };
       }
     );
@@ -57,15 +61,15 @@ export const addRemoveFriends = async (req, res) => {
     const { id, friendId } = req.params;
     const user = await Usermodel.findById(id);
     const friend = await Usermodel.findById(friendId);
-    let message='';
+    let message = "";
     if (user.friends.includes(friendId)) {
       user.friends = user.friends.filter((id) => id !== friendId);
       friend.friends = friend.friends.filter((_id) => _id !== id);
-      message='User is Removed from Friends';
+      message = "User is Removed from Friends";
     } else {
       user.friends.push(friendId);
       friend.friends.push(id);
-      message='User is Added to Friends';
+      message = "User is Added to Friends";
     }
     await user.save();
     await friend.save();
@@ -95,7 +99,7 @@ export const addRemoveFriends = async (req, res) => {
     // );
     const formatedFriends = allfriends.map(({ _id }) => {
       return _id;
-    })
+    });
     return res.status(STATUS_TYPES.OK).json({ message, formatedFriends });
   } catch (error) {
     return res.status(STATUS_TYPES.NOT_FOUND).json({ error: error.message });
