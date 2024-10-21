@@ -5,7 +5,8 @@ const STATUS_TYPES = {
   BAD_REQUEST: 400,
   UNAUTHORIZED: 401,
   FORBIDDEN: 403,
-  SERVER_ERROR:500,
-  NOT_FOUND:404
+  SERVER_ERROR: 500,
+  NOT_FOUND: 404,
 };
+export const generatedOtps = {};
 export default STATUS_TYPES;

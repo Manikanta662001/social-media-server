@@ -151,6 +151,16 @@ io.on("connection", (socket) => {
       }
       //to send message to a particular roomId
       io.to(roomId).emit("message", singleMessage);
+      const activeRoom = io.sockets.adapter.rooms.get(roomId);
+      if (!activeRoom || activeRoom.size < 2) {
+        const receipientUser = await Usermodel.findById(from.id);
+        receipientUser.messageCount = (receipientUser.messageCount || 0) + 1;
+        await receipientUser.save();
+        io.emit("msgCount", {
+          from: receipientUser._id,
+          receipientUser: receipientUser,
+        });
+      }
       //change the Friends array of UserModel
       const currentUser = await Usermodel.findById(from.id);
       const clonedObj = [...currentUser.friends];
@@ -167,7 +177,32 @@ io.on("connection", (socket) => {
     const allMsgs = await MessageModel.findOne({ roomId });
     io.to(roomId).emit("getallmsgs", { messages: allMsgs?.messages ?? [] });
   });
+  socket.on("msgtyping", async ({ roomId, to }) => {
+    io.to(roomId).emit("msgtyping", { roomId, to });
+  });
+  socket.on("msgnottyping", async ({ roomId, to }) => {
+    io.to(roomId).emit("msgnottyping", { roomId, to });
+  });
 
+  socket.on("clearMsgCount", async ({ roomId, userId }) => {
+    const receipientUser = await Usermodel.findById(userId);
+    receipientUser.messageCount = 0;
+    await receipientUser.save();
+    io.emit("msgCount", {
+      from: receipientUser._id,
+      receipientUser: receipientUser,
+    });
+  });
+
+  socket.on("updateLastSeen", async ({ selectedId, lastSeen }) => {
+    const receipientUser = await Usermodel.findById(selectedId);
+    receipientUser.lastSeen = lastSeen;
+    await receipientUser.save();
+    io.emit("updateLastSeen", {
+      id: receipientUser._id,
+      receipientUser: receipientUser,
+    });
+  });
   socket.on("disconnect", () => {
     console.log("Client Disconnected");
   });

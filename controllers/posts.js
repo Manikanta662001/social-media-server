@@ -20,7 +20,7 @@ export const createPost = async (req, res) => {
       description,
       userPicturePath: user.picturePath,
       likes: [],
-      comments: ["single comment"],
+      comments: [],
     };
     if (name) incomingPost.picturePath = name;
     const newPost = await Postmodel(incomingPost);
