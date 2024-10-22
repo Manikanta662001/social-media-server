@@ -13,6 +13,7 @@ const fileSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  type: String,
 });
 const FileModel = new mongoose.model("File", fileSchema);
 export default FileModel;
