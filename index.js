@@ -137,7 +137,7 @@ io.on("connection", (socket) => {
         date,
         type,
       };
-      if (type === "image") singleMessage.fileLink = fileLink;
+      if (type === "image" || type === 'document') singleMessage.fileLink = fileLink;
       const roomPresent = await MessageModel.findOne({ roomId });
       if (roomPresent) {
         roomPresent.messages.push(singleMessage);
