@@ -110,7 +110,7 @@ export const login = async (req, res) => {
       return res
         .status(STATUS_TYPES.OK)
         .json({ user: userObject, token, message: "Login Successful" });
-    });
+    //});
   } catch (error) {
     return res.status(STATUS_TYPES.SERVER_ERROR).json({ error: error.message });
   }
