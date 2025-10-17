@@ -90,20 +90,20 @@ export const login = async (req, res) => {
         .status(STATUS_TYPES.BAD_REQUEST)
         .json({ error: "Invalid Credentials" });
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-    const mailOptions = {
-      from: "gundlurimanikanta142@gmail.com",
-      to: email,
-      subject: "Social-Media Login",
-      html: `
-      Hii <em>${user.firstName}</em>,
-      <p>Login Successful.</p>
-      <br/>
-      <h6>Thank You</h6>`,
-    };
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        return res.status(STATUS_TYPES.SERVER_ERROR).send(error.toString());
-      }
+    // const mailOptions = {
+    //   from: "gundlurimanikanta142@gmail.com",
+    //   to: email,
+    //   subject: "Social-Media Login",
+    //   html: `
+    //   Hii <em>${user.firstName}</em>,
+    //   <p>Login Successful.</p>
+    //   <br/>
+    //   <h6>Thank You</h6>`,
+    // };
+    // transporter.sendMail(mailOptions, (error, info) => {
+    //   if (error) {
+    //     return res.status(STATUS_TYPES.SERVER_ERROR).send(error.toString());
+    //   }
       const userObject = user.toObject();
       //we don't need to send the pwd to frontend
       delete userObject.password;
