@@ -75,8 +75,10 @@ export const register = async (req, res) => {
 /* LOGIN */
 
 export const login = async (req, res) => {
+  console.log("LOGIN::::")
   try {
     const { email, password } = req.body;
+    console.log("LOGIN::::1", { email, password })
     const user = await Usermodel.findOne({ email });
     if (!user)
       return res
