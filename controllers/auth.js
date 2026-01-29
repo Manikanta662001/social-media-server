@@ -9,12 +9,10 @@ dotenv.config();
 
 /* Send Mail  */
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: false, // MUST be false for port 587
+  service: "gmail",
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
 
@@ -62,15 +60,18 @@ export const register = async (req, res) => {
       <br/>
       <h6>Thank You</h6>`,
     };
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        return res.status(STATUS_TYPES.SERVER_ERROR).send(error.toString());
-      }
-      return res.status(STATUS_TYPES.CREATED).json({
-        user: savedUser,
-        message: "User Registered Successfully and Email Sent",
-      });
+    res.status(STATUS_TYPES.CREATED).json({
+      user: savedUser,
+      message: "User Registered Successfully and Email Sent",
     });
+    transporter
+      .sendMail(mailOptions)
+      .then(() => {
+        console.log("Login email sent");
+      })
+      .catch((err) => {
+        console.error("Email failed:", err.message);
+      });
   } catch (error) {
     res.status(STATUS_TYPES.SERVER_ERROR).json({ error: error.message });
   }
@@ -105,30 +106,28 @@ export const login = async (req, res) => {
       <h6>Thank You</h6>`,
     };
     const userObject = user.toObject();
+    //we don't need to send the pwd to frontend
     delete userObject.password;
-
-    // ✅ Respond immediately
-    res.status(200).json({
-      user: userObject,
-      token,
-      message: "Login Successful",
-    });
-
-    // ✅ Email runs in background
+    res
+      .status(STATUS_TYPES.OK)
+      .json({ user: userObject, token, message: "Login Successful" });
     transporter
       .sendMail({
-        from: process.env.EMAIL_FROM,
+        from: process.env.EMAIL_USER,
         to: email,
-        subject: "Login Successful",
+        subject: "Social-Media Login",
         html: `
-        Hi <b>${user.firstName}</b>,
-        <p>You have successfully logged in.</p>
+        Hi <em>${user.firstName}</em>,
+        <p>Login Successful.</p>
         <br/>
-        <small>— Social Media Team</small>
+        <h6>Thank You</h6>
       `,
       })
+      .then(() => {
+        console.log("Login email sent");
+      })
       .catch((err) => {
-        console.error("Brevo email failed:", err.message);
+        console.error("Email failed:", err.message);
       });
   } catch (error) {
     return res.status(STATUS_TYPES.SERVER_ERROR).json({ error: error.message });
@@ -157,14 +156,15 @@ export const forgotPwd1 = async (req, res) => {
       <br/>
       <h6>Thank You</h6>`,
     };
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        return res.status(STATUS_TYPES.SERVER_ERROR).send(error.toString());
-      }
-      return res
-        .status(STATUS_TYPES.OK)
-        .json({ message: "Otp Sent To Your Mail" });
-    });
+    res.status(STATUS_TYPES.OK).json({ message: "Otp Sent To Your Mail" });
+    transporter
+      .sendMail(mailOptions)
+      .then(() => {
+        console.log("Login email sent");
+      })
+      .catch((err) => {
+        console.error("Email failed:", err.message);
+      });
   } catch (error) {
     return res.status(STATUS_TYPES.SERVER_ERROR).json({ error: error.message });
   }
