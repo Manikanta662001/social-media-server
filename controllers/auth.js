@@ -5,15 +5,17 @@ import Usermodel from "../models/Usermodel.js";
 import STATUS_TYPES, { generatedOtps } from "../utils/constants.js";
 import nodemailer from "nodemailer";
 
+dotenv.config();
+
 /* Send Mail  */
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "gundlurimanikanta142@gmail.com",
-    pass: "sdmf gyux ywam kkmw",
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
-dotenv.config();
+
 /* REGISTER */
 export const register = async (req, res) => {
   try {
