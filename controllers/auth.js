@@ -9,10 +9,12 @@ dotenv.config();
 
 /* Send Mail  */
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT),
+  secure: false, // MUST be false for port 587
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
   },
 });
 
@@ -77,10 +79,10 @@ export const register = async (req, res) => {
 /* LOGIN */
 
 export const login = async (req, res) => {
-  console.log("LOGIN::::")
+  console.log("LOGIN::::");
   try {
     const { email, password } = req.body;
-    console.log("LOGIN::::1", { email, password })
+    console.log("LOGIN::::1", { email, password });
     const user = await Usermodel.findOne({ email });
     if (!user)
       return res
@@ -102,17 +104,32 @@ export const login = async (req, res) => {
       <br/>
       <h6>Thank You</h6>`,
     };
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        return res.status(STATUS_TYPES.SERVER_ERROR).send(error.toString());
-      }
-      const userObject = user.toObject();
-      //we don't need to send the pwd to frontend
-      delete userObject.password;
-      return res
-        .status(STATUS_TYPES.OK)
-        .json({ user: userObject, token, message: "Login Successful" });
+    const userObject = user.toObject();
+    delete userObject.password;
+
+    // ✅ Respond immediately
+    res.status(200).json({
+      user: userObject,
+      token,
+      message: "Login Successful",
     });
+
+    // ✅ Email runs in background
+    transporter
+      .sendMail({
+        from: process.env.EMAIL_FROM,
+        to: email,
+        subject: "Login Successful",
+        html: `
+        Hi <b>${user.firstName}</b>,
+        <p>You have successfully logged in.</p>
+        <br/>
+        <small>— Social Media Team</small>
+      `,
+      })
+      .catch((err) => {
+        console.error("Brevo email failed:", err.message);
+      });
   } catch (error) {
     return res.status(STATUS_TYPES.SERVER_ERROR).json({ error: error.message });
   }
@@ -183,7 +200,7 @@ export const forgotPwd3 = async (req, res) => {
     const updatedUser = await Usermodel.findOneAndUpdate(
       { email: email },
       { password: hashedPwd },
-      { new: true, upsert: true }
+      { new: true, upsert: true },
     );
     return res
       .status(STATUS_TYPES.OK)
